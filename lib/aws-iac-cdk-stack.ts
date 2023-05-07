@@ -1,11 +1,11 @@
-import { App, RemovalPolicy, Stack, StackProps } from "aws-cdk-lib";
+import { App, CfnOutput, RemovalPolicy, Stack, StackProps } from "aws-cdk-lib";
 import {
   CfnAuthorizer,
   AuthorizationType,
   LambdaIntegration,
   RestApi,
 } from "aws-cdk-lib/aws-apigateway";
-import { UserPool } from "aws-cdk-lib/aws-cognito";
+import { PasswordPolicy, UserPool, UserPoolClient } from "aws-cdk-lib/aws-cognito";
 import { Construct } from "constructs";
 import { AssetCode, Runtime, Function } from "aws-cdk-lib/aws-lambda";
 import { AttributeType, Table } from "aws-cdk-lib/aws-dynamodb";
@@ -16,7 +16,6 @@ export class AwsIacCdkStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
     const env = process.env.ENVIRONMENT;
-
     const userPool = new UserPool(this, env + "_todoUserPool_cdk", {
       /*
       standardAttributes: {
@@ -27,8 +26,29 @@ export class AwsIacCdkStack extends Stack {
       },
       selfSignUpEnabled: true,
       */
+      passwordPolicy: {
+        requireDigits: false,
+        requireUppercase: false,
+        minLength: 6,
+      },
+      selfSignUpEnabled: true,
       removalPolicy: RemovalPolicy.DESTROY,
       userPoolName: env + "_todoUserPool_cdk",
+    });
+    new CfnOutput(this, "UserPoolId", { value: userPool.userPoolId });
+
+    const userPoolClient = new UserPoolClient(
+      this,
+      env + "_todoUserPoolClient_cdk",
+      {
+        userPool,
+        authFlows: {
+          userPassword: true
+        }
+      }
+    );
+    new CfnOutput(this, "UserPoolClientId", {
+      value: userPoolClient.userPoolClientId,
     });
 
     const dynamoTable = new Table(this, process.env.TODO_TABLE ?? "unknown", {
