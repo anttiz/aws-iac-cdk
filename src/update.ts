@@ -1,9 +1,9 @@
-"use strict";
-
 import { Handler } from "aws-lambda";
-import AWS = require("aws-sdk");
+import { DynamoDB } from "aws-sdk";
+import { config } from "dotenv";
+config();
 
-const dynamoDb = new AWS.DynamoDB.DocumentClient();
+const dynamoDb = new DynamoDB.DocumentClient();
 
 export const update: Handler = (event, context, callback) => {
   const timestamp = new Date().getTime();

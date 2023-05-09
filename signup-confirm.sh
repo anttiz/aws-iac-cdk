@@ -1,9 +1,5 @@
 source .env
-USER_POOL_ID="$(aws cloudformation describe-stacks \
-    --stack-name AwsIacCdkStack  \
-    --query "Stacks[0].Outputs" \
-    --output json | jq -rc '.[] | select(.OutputKey=="UserPoolId") | .OutputValue '
-)"
+USER_POOL_ID="$(cat outputs.json | jq -r '.AwsIacCdkStack.UserPoolId')"
 
 aws cognito-idp admin-confirm-sign-up  \
  --user-pool-id ${USER_POOL_ID} \

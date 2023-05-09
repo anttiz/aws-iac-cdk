@@ -17,15 +17,6 @@ export class AwsIacCdkStack extends Stack {
     super(scope, id, props);
     const env = process.env.ENVIRONMENT;
     const userPool = new UserPool(this, env + "_todoUserPool_cdk", {
-      /*
-      standardAttributes: {
-        phoneNumber: { required: false },
-      },
-      signInAliases: {
-        email: true,
-      },
-      selfSignUpEnabled: true,
-      */
       passwordPolicy: {
         requireDigits: false,
         requireUppercase: false,
@@ -71,7 +62,10 @@ export class AwsIacCdkStack extends Stack {
     // Todo Resource API for the REST API.
     const items = restApi.root.addResource("todo");
 
-    const methods = [["get", "Get", "list.handler"]];
+    const methods = [
+      ["get", "Get", "list.handler"],
+      ["post", "Post", "create.handler"]
+    ];
 
     methods.forEach(([method, ucMethod, handler]) => {
       const func = new Function(this, env + `_${ucMethod}TodoFunction`, {
@@ -85,7 +79,7 @@ export class AwsIacCdkStack extends Stack {
         env + `_Todo${ucMethod}CfnAuthorizer`,
         {
           restApiId: restApi.restApiId,
-          name: "TodoGetAPIAuthorizer",
+          name: `Todo${ucMethod}APIAuthorizer`,
           type: "COGNITO_USER_POOLS",
           identitySource: "method.request.header.Authorization",
           providerArns: [userPool.userPoolArn],
