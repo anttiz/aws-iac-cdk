@@ -18,8 +18,10 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
 ## Instructions
 1. Setup project with `npm install`
 2. Perform another `npm install` in `src` folder
-3. Create .env files based on .env.default files
+3. Create .env files based on .env.default files in root and src directories
 4. ensure AWS profile exists by using `export AWS_PROFILE=<profile>`
 5. Deploy by using `npm run deploy`
 6. Create user by command `source ./login.sh`
-7.
+7. Test GET API with `./test-get-todos.sh`
+8. Create item with `./test-create.sh`
+9. Test GET API with `./test-get-todos.sh`
