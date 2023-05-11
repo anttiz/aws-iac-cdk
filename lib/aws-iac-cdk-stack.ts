@@ -16,6 +16,7 @@ export class AwsIacCdkStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
     const env = process.env.ENVIRONMENT;
+    // User pool
     const userPool = new UserPool(this, env + "_todoUserPool_cdk", {
       passwordPolicy: {
         requireDigits: false,
@@ -28,6 +29,7 @@ export class AwsIacCdkStack extends Stack {
     });
     new CfnOutput(this, "UserPoolId", { value: userPool.userPoolId });
 
+    // User pool client
     const userPoolClient = new UserPoolClient(
       this,
       env + "_todoUserPoolClient_cdk",
@@ -42,6 +44,7 @@ export class AwsIacCdkStack extends Stack {
       value: userPoolClient.userPoolClientId,
     });
 
+    // DynamoDB
     const dynamoTable = new Table(this, process.env.TODO_TABLE ?? "unknown", {
       partitionKey: {
         name: "todoId",
@@ -56,6 +59,7 @@ export class AwsIacCdkStack extends Stack {
       removalPolicy: RemovalPolicy.DESTROY,
     });
 
+    // API gateway
     const restApi = new RestApi(this, env + `_TodoLambdaRestApi`, {
       restApiName: `todo-cdk-api`,
     });
@@ -68,6 +72,7 @@ export class AwsIacCdkStack extends Stack {
     ];
 
     methods.forEach(([method, ucMethod, handler]) => {
+      // Lambda
       const func = new Function(this, env + `_${ucMethod}TodoFunction`, {
         code: new AssetCode("src"),
         handler,
@@ -86,8 +91,6 @@ export class AwsIacCdkStack extends Stack {
         }
       );
 
-      // GET method for the TODO API resource. It uses Cognito for
-      // authorization and the authorizer defined above.
       items.addMethod(method.toUpperCase(), new LambdaIntegration(func), {
         authorizationType: AuthorizationType.COGNITO,
         authorizer: {

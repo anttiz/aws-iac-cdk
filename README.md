@@ -13,3 +13,13 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
 * `cdk diff`        compare deployed stack with current state
 * `cdk synth`       emits the synthesized CloudFormation template
 * `cdk deploy -O outputs.json` Deploy and output variables
+* `npm run deploy`  combines the build and deploy
+
+## Instructions
+1. Setup project with `npm install`
+2. Perform another `npm install` in `src` folder
+3. Create .env files based on .env.default files
+4. ensure AWS profile exists by using `export AWS_PROFILE=<profile>`
+5. Deploy by using `npm run deploy`
+6. Create user by command `source ./login.sh`
+7.
