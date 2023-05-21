@@ -14,6 +14,10 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
 * `cdk synth`       emits the synthesized CloudFormation template
 * `cdk deploy -O outputs.json` Deploy and output variables
 * `npm run deploy`  combines the build and deploy
+* `npx aws-sdk-js-codemod -t v2-to-v3 src/list.ts` migrate file syntax from AWS SDK v2 to v3
+* `java -Djava.library.path=./DynamoDBLocal_lib -jar DynamoDBLocal.jar -sharedDb -port 6789` Start local Dynamo DB (see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.DownloadingAndRunning.html)
+* `aws dynamodb list-tables --endpoint-url http://localhost:6789`
+* `dynamo-db-create-table.sh` Create Dynamo DB table in localhost
 
 ## Instructions
 1. Setup project with `npm install`
@@ -25,3 +29,7 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
 7. Test GET API with `./test-get-todos.sh`
 8. Create item with `./test-create.sh`
 9. Test GET API with `./test-get-todos.sh`
+
+## Debug lambda
+1. `cdk synth --no-staging > template.yml`
+2. `sam local invoke devGetTodoFunctionA9B361EC --no-event`

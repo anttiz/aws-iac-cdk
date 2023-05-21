@@ -1,15 +1,21 @@
-import { App, CfnOutput, RemovalPolicy, Stack, StackProps } from "aws-cdk-lib";
+import { CfnOutput, RemovalPolicy, Stack, StackProps } from "aws-cdk-lib";
 import {
   CfnAuthorizer,
   AuthorizationType,
   LambdaIntegration,
   RestApi,
+  Cors,
 } from "aws-cdk-lib/aws-apigateway";
-import { PasswordPolicy, UserPool, UserPoolClient } from "aws-cdk-lib/aws-cognito";
+import { UserPool, UserPoolClient } from "aws-cdk-lib/aws-cognito";
 import { Construct } from "constructs";
 import { AssetCode, Runtime, Function } from "aws-cdk-lib/aws-lambda";
 import { AttributeType, Table } from "aws-cdk-lib/aws-dynamodb";
 import { config } from "dotenv";
+import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
+import {
+  IdentityPool,
+  UserPoolAuthenticationProvider,
+} from "@aws-cdk/aws-cognito-identitypool-alpha";
 config();
 
 export class AwsIacCdkStack extends Stack {
@@ -36,12 +42,24 @@ export class AwsIacCdkStack extends Stack {
       {
         userPool,
         authFlows: {
-          userPassword: true
-        }
+          userPassword: true,
+          userSrp: true,
+        },
       }
     );
     new CfnOutput(this, "UserPoolClientId", {
       value: userPoolClient.userPoolClientId,
+    });
+
+    const identityPool = new IdentityPool(this, "TodoIdentityPool", {
+      authenticationProviders: {
+        userPools: [new UserPoolAuthenticationProvider({ userPool })],
+      },
+      allowClassicFlow: true,
+    });
+
+    new CfnOutput(this, "IdentityPoolId", {
+      value: identityPool.identityPoolId,
     });
 
     // DynamoDB
@@ -61,24 +79,23 @@ export class AwsIacCdkStack extends Stack {
 
     // API gateway
     const restApi = new RestApi(this, env + `_TodoLambdaRestApi`, {
-      restApiName: `todo-cdk-api`,
+      restApiName: `todo-cdk-api`
     });
     // Todo Resource API for the REST API.
     const items = restApi.root.addResource("todo");
 
     const methods = [
-      ["get", "Get", "list.handler"],
-      ["post", "Post", "create.handler"]
+      ["get", "Get", "list.handler", "list"],
+      ["post", "Post", "create.handler", "create"],
     ];
 
-    methods.forEach(([method, ucMethod, handler]) => {
+    methods.forEach(([method, ucMethod, handler, fileName]) => {
       // Lambda
       const func = new Function(this, env + `_${ucMethod}TodoFunction`, {
         code: new AssetCode("src"),
         handler,
         runtime: Runtime.NODEJS_18_X,
       });
-
       const authorizer = new CfnAuthorizer(
         this,
         env + `_Todo${ucMethod}CfnAuthorizer`,
@@ -95,7 +112,7 @@ export class AwsIacCdkStack extends Stack {
         authorizationType: AuthorizationType.COGNITO,
         authorizer: {
           authorizerId: authorizer.ref,
-        },
+        }
       });
       dynamoTable.grantReadWriteData(func);
     });

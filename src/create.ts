@@ -40,6 +40,10 @@ export const handler: Handler = (event, context, callback) => {
     const response = {
       statusCode: 200,
       body: JSON.stringify(params.Item),
+      headers: {
+        'Access-Control-Allow-Origin': "*",
+        'Access-Control-Allow-Credentials': true,
+      },
     };
     callback(null, response);
   });
