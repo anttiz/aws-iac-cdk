@@ -79,7 +79,11 @@ export class AwsIacCdkStack extends Stack {
 
     // API gateway
     const restApi = new RestApi(this, env + `_TodoLambdaRestApi`, {
-      restApiName: `todo-cdk-api`
+      restApiName: `todo-cdk-api`,
+      defaultCorsPreflightOptions: {
+        allowOrigins: Cors.ALL_ORIGINS,
+        allowMethods: Cors.ALL_METHODS // this is also the default
+      }
     });
     // Todo Resource API for the REST API.
     const items = restApi.root.addResource("todo");
