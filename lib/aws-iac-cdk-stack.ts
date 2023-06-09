@@ -91,6 +91,7 @@ export class AwsIacCdkStack extends Stack {
     const methods = [
       ["get", "Get", "list.handler", "list"],
       ["post", "Post", "create.handler", "create"],
+      ["delete", "Delete", "delete.handler", "delete"],
     ];
 
     methods.forEach(([method, ucMethod, handler, fileName]) => {
