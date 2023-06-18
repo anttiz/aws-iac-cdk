@@ -1,7 +1,7 @@
 import { getDynamoDbDocumentClient } from "../dynamoDb/dynamoDbDocumentClient";
 import { ScanCommand, ScanCommandInput } from "@aws-sdk/lib-dynamodb";
 import { APIGatewayProxyResultV2 } from "aws-lambda";
-import { MyRequest } from "./MyRequest";
+import { MyRequest, MyRequestProps } from "./MyRequest";
 import { config } from "dotenv";
 
 config();
@@ -9,20 +9,33 @@ config();
 export class GetListRequest extends MyRequest {
   private params: ScanCommandInput;
 
-  constructor(
-    protected eventBody: string,
-    protected tableNameInput: string,
-    protected localEndpoint?: string
-  ) {
-    super(eventBody, tableNameInput, localEndpoint);
+  constructor({
+    eventBody,
+    tableNameInput,
+    localEndpoint,
+    userId,
+  }: MyRequestProps) {
+    super({
+      eventBody,
+      tableNameInput,
+      localEndpoint,
+      userId,
+    });
     this.tableName = tableNameInput;
     this.params = {
       TableName: process.env.TODO_TABLE ?? "",
+      FilterExpression: "#userId = :userId",
+      ExpressionAttributeNames: {
+        "#userId": "userId",
+      },
+      ExpressionAttributeValues: {
+        ":userId": userId,
+      },
     };
   }
 
   scanTable = async () => {
-    const client = getDynamoDbDocumentClient(this.localEndpoint);
+    const client = getDynamoDbDocumentClient(this.localEndPoint);
     try {
       const data = await client.send(new ScanCommand(this.params));
       return data.Items;
@@ -41,8 +54,8 @@ export class GetListRequest extends MyRequest {
       statusCode: 200,
       body: JSON.stringify(items),
       headers: {
-        'Access-Control-Allow-Origin': "*",
-        'Access-Control-Allow-Credentials': true,
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Credentials": true,
       },
     };
     return response;

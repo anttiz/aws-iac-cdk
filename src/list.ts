@@ -3,6 +3,8 @@ import { DynamoDBDocument } from "@aws-sdk/lib-dynamodb";
 import { DynamoDB, DynamoDBClientConfig } from "@aws-sdk/client-dynamodb";
 import { config } from "dotenv";
 import { GetListRequest } from "./shared/request/GetListRequest";
+import { CognitoIdToken } from "@xeedware/cognito-jwt/dist";
+
 config();
 
 const conf: DynamoDBClientConfig = {
@@ -15,7 +17,13 @@ const params = {
 
 export const handler = async (event: APIGatewayProxyEventV2):Promise<APIGatewayProxyResultV2> => {
   // fetch all todos from the database
-  const request = new GetListRequest(event.body ?? '', params.TableName);
+  const token = event.headers.Authorization?.split(" ")[1] ?? '';
+  const cognitoIdToken = new CognitoIdToken(token);
+  const request = new GetListRequest({
+    eventBody: event.body ?? '',
+    tableNameInput: params.TableName,
+    userId: cognitoIdToken.sub
+  });
   const response = await request.process();
   return response;
 };

@@ -2,7 +2,7 @@ import * as uuid from "uuid";
 import { Handler } from "aws-lambda";
 import { DynamoDB } from "aws-sdk";
 import { config } from "dotenv";
-import {CognitoIdToken} from '@xeedware/cognito-jwt/dist';
+import { CognitoIdToken } from "@xeedware/cognito-jwt/dist";
 
 config();
 
@@ -10,7 +10,7 @@ const dynamoDb = new DynamoDB.DocumentClient();
 
 export const handler: Handler = (event, context, callback) => {
   const timeStamp = new Date().getTime();
-  const token = event.headers.Authorization.split(' ')[1];
+  const token = event.headers.Authorization.split(" ")[1];
   const cognitoIdToken = new CognitoIdToken(token);
   const data = JSON.parse(event.body);
   if (typeof data.name !== "string" || !cognitoIdToken || !cognitoIdToken.sub) {
